@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import sys
+import os
 
-sys.path.append("./importers")
+path = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(f"{path}/importers")
 from CSVImporter import Col, Importer, Drcr
 
 currency = "CNY"
 
-drcr_dict = {"支出": Drcr.DEBIT, "收入": Drcr.CREDIT, "已支出": Drcr.DEBIT, "已收入": Drcr.CREDIT, "其他": Drcr.CREDIT}
+drcr_dict = {"支出": Drcr.DEBIT, "收入": Drcr.CREDIT, "已支出": Drcr.DEBIT, "已收入": Drcr.CREDIT, "其他": Drcr.CREDIT, "不计收支": Drcr.DEBIT}
 refund_keyword = "退款"
 
 iconfig_wechat = {
@@ -33,6 +35,28 @@ iconfig_alipay = {
     Col.TXN_TIME: "交易时间",
     Col.TXN_DATE: "交易时间",
     Col.TYPE: "交易分类",
+}
+
+iconfig_hisdetail = {
+    Col.DATE: "交易日期",
+    Col.PAYEE: "对方户名",
+    Col.NARRATION: "摘要",
+    Col.ACCOUNT: "交易场所",
+    Col.AMOUNT_CREDIT: "记账金额(收入)",
+    Col.AMOUNT_DEBIT: "记账金额(支出)",
+    Col.TXN_TIME: "交易日期",
+    Col.TXN_DATE: "交易日期",
+}
+
+iconfig_hqmx = {
+    Col.DATE: "交易日期",
+    Col.PAYEE: "对方账号与户名",
+    Col.NARRATION: "交易地点/附言",
+    Col.ACCOUNT: "钞汇",
+    Col.AMOUNT: "交易金额",
+    Col.TXN_TIME: "交易日期",
+    Col.TXN_DATE: "交易日期",
+    Col.DRCR: "摘要",
 }
 
 account_map = {
@@ -82,10 +106,39 @@ alipay_importer = Importer(
     "",
     currency,
     "alipay_record",
-    1,
+    24,
     drcr_dict,
     refund_keyword,
     account_map,
 )
 
-CONFIG = [wechat_importer, alipay_importer]
+hisdetail_importer = Importer(
+    iconfig_hisdetail,
+    "",
+    currency,
+    "hisdetail",
+    6,
+    drcr_dict,
+    refund_keyword,
+    account_map=account_map,
+    allow_zero_amounts = True,
+)
+
+hqmx_importer = Importer(
+    iconfig_hqmx,
+    "",
+    currency,
+    "hqmx",
+    2,
+    {
+        "利息存入": Drcr.CREDIT,
+        "跨行转出": Drcr.DEBIT,
+        "电子汇入": Drcr.CREDIT,
+        "消费": Drcr.DEBIT,
+    },
+    refund_keyword,
+    account_map=account_map,
+    allow_zero_amounts = True,
+)
+
+CONFIG = [wechat_importer, alipay_importer, hisdetail_importer, hqmx_importer]

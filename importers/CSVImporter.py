@@ -95,7 +95,7 @@ def cast_to_decimal(amount: str):
 
 
 def strip_blank(contents):
-    """ 
+    """
     strip the redundant blank in file contents.
     """
     with io.StringIO(contents) as csvfile:
@@ -124,7 +124,7 @@ def get_amounts(
     if Col.AMOUNT in iconfig:
         amount = row[iconfig[Col.AMOUNT]]
         # Distinguish debit or credit
-        if drcr == Drcr.CREDIT:
+        if (drcr == Drcr.CREDIT) or (not str(amount).startswith("-")):
             credit = amount
         else:
             debit = amount
@@ -229,8 +229,6 @@ class Importer(importer.ImporterProtocol):
             return max_date
 
     def identify(self, file: cache._FileMemo):
-        if file.mimetype() != "text/csv":
-            return False
         if not os.path.basename(file.name).startswith(self.file_name_prefix):
             return False
 
