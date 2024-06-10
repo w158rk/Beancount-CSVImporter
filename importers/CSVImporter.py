@@ -124,14 +124,10 @@ def get_amounts(
     if Col.AMOUNT in iconfig:
         amount = row[iconfig[Col.AMOUNT]]
         # Distinguish debit or credit
-        if (drcr == Drcr.CREDIT):
+        if drcr == Drcr.CREDIT:
             credit = amount
-        elif drcr == Drcr.DEBIT:
-            debit = amount
-        elif str(amount).startswith("-"):
-            debit = amount
         else:
-            credit = amount
+            debit = amount
     else:
         debit, credit = [
             row[iconfig[col]] if col in iconfig else None
